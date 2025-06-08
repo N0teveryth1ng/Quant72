@@ -1,27 +1,20 @@
 import yfinance as yf
+import pandas as pd
 from datetime import datetime
 import os
 
-# fetch data function
-def data_fetch(ticker='TSLA',start='2023-01-01',end=None):
-    if end is None:
-        end = datetime.today().strftime('%Y-%m-%d')
+def data_fetch(ticker='AAPL'):
+    data = yf.download(ticker, start='2022-01-01', end='2024-05-31', auto_adjust=True)
 
-    os.makedirs("data/raw", exist_ok=True)
+    # ✅ Flatten multi-index if needed
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = data.columns.get_level_values(0)
 
-    data = yf.download(ticker, start=start ,end=end)
-    data.reset_index(inplace=True)
+    data.index.name = 'Date'
+    data.to_csv(f"src/data/raw/{ticker}_stock.csv")
 
-    csv_path = f"data/raw/{ticker}_stock.csv"
-    data.to_csv(csv_path,index=False)
-    print(f"data saved to {csv_path}")
     return data
+
 
 if __name__ == "__main__":
    data_fetch('AAPL')
-#
-#
-# # Test case
-# ticker = 'MSFT'
-# data = yf.download(ticker,auto_adjust=False)
-# print(data.info())
