@@ -14,3 +14,4 @@ model.fit(X_train, y_train)
 # score tracker
 print("train accs : ", model.score(X_train, y_train))
 print("test accs : ", model.score(X_test, y_test))
+
