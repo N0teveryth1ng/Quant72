@@ -1,21 +1,10 @@
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
-import logging
 import os
+from src.logger import get_logger
 
-from IPython.core.pylabtools import retina_figure
-from streamlit import exception
-
-os.makedirs("logs", exist_ok=True) # ensures log folder exists
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s",
-    handlers=[
-        logging.FileHandler("logs/data_fetcher.log"),
-        logging.StreamHandler()
-    ]
-)
+logging = get_logger("data_fetch", "logs/data_fetcher.log")
 
 # apple data fetcher
 def data_fetch(ticker='AAPL'):
@@ -31,8 +20,8 @@ def data_fetch(ticker='AAPL'):
     os.makedirs("src/data/raw", exist_ok=True)
     csv_path = f"src/data/raw/{ticker}_stock.csv"
     data.to_csv(csv_path)
-    logging.info(f"Data saved to csv{csv_path}")
 
+    logging.info(f"Data saved to csv{csv_path}")
     return data
 
   except Exception as e:

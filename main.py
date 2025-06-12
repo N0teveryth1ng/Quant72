@@ -45,7 +45,6 @@ def run_pipeline_2():
 
 # for tests
 if __name__ == "__main__":
-    # data_fetch('AAPL')  # Ensure latest data
-    # run_pipeline_2() # calling RDF
-    # run_pipeline_1() # calling XGB
-    arima_pipeline() # calling btc one
+    run_pipeline_2() # calling RDF
+    run_pipeline_1() # calling XGB
+
