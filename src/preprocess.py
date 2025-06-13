@@ -1,5 +1,6 @@
 import random
-from src.data_fetcher import data_fetch
+from src.data_fetcher import data_fetch, data_fetch_2024
+import pandas as pd
 
 
 # - - - - > AAPL data pre-process
@@ -23,5 +24,31 @@ train_df['sentiment'] = [fake_sentiment() for _ in range (len(train_df))]
 # final feature prep
 X = train_df[['daily_return', 'sentiment']].dropna()
 y = train_df['volatile'].loc[X.index]
+
+
+
+
+
+
+
+# Data preprocess & feature engineering for prediction - - - >
+df = data_fetch_2024(ticker='AAPL')
+
+# feature engineering
+df['Prev_Close'] = df['Close'].shift(1) #yesterday's moving avg
+df['5_day_avg'] = df['Close'].rolling(5).mean() # 5 days MA
+df['Target'] = df['CLose'].shift(-1) # tomorrow's future price [ Predict ]
+prices = df['Close'].dropna() # price closed at
+
+df.dropna(inplace=True) # drop missing vals
+
+# train - test for - - - > [Prices]
+train = prices[:-10]
+test = prices[-10:]
+
+# final features
+X1 = df[['Prev_Close', '5_day_avg']]
+y1 = df['Target']
+
 
 

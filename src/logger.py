@@ -1,12 +1,13 @@
-# separate script to handle logging over the project
+# separate script to handle logging over the project  - - - > [ GLOBAL LOGGING ]
 
 import logging
 import os
 
 
-
+# checks if the directory exists
 os.makedirs("logs",exist_ok=True)
 
+# global logger function
 def get_logger(name, logfile):
   try:
         logger = logging.getLogger(name)
