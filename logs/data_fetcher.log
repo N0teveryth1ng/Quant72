@@ -56,3 +56,11 @@ INFO:root:Data saved to csvsrc/data/raw/AAPL_stock.csv
 2025-06-13 03:17:47,263 | INFO | Data saved to csvsrc/data/raw/AAPL_stock.csv
 2025-06-13 10:12:27,888 | INFO | data fetching for AAPL...
 2025-06-13 10:12:28,706 | INFO | Data saved to csvsrc/data/raw/AAPL_stock.csv
+2025-06-13 19:34:26,574 | INFO | data fetching for AAPL...
+2025-06-13 19:34:27,517 | INFO | Data saved to csvsrc/data/raw/AAPL_stock.csv
+2025-06-13 19:34:27,544 | INFO | Fetching current market data AAPL. . .
+2025-06-13 19:34:28,009 | ERROR | Something went wrong: [Errno 13] Permission denied: 'src/dataAAPL_current.csv' 
+2025-06-13 19:34:53,046 | INFO | data fetching for AAPL...
+2025-06-13 19:34:54,033 | INFO | Data saved to csvsrc/data/raw/AAPL_stock.csv
+2025-06-13 19:34:54,040 | INFO | Fetching current market data AAPL. . .
+2025-06-13 19:34:54,470 | ERROR | Something went wrong: [Errno 13] Permission denied: 'src/dataAAPL_current.csv' 

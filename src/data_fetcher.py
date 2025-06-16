@@ -3,9 +3,6 @@ import pandas as pd
 import datetime
 import os
 
-from dateutil.utils import today
-from scipy.stats import loggamma_gen
-
 from src.logger import get_logger
 
 logging = get_logger("data_fetch", "logs/data_fetcher.log")
@@ -59,3 +56,4 @@ def data_fetch_2024(ticker='AAPL'):
 # Tests
 if __name__ == "__main__":
    data_fetch('AAPL')
+   data_fetch_2024('AAPL')

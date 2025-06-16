@@ -6,13 +6,12 @@ from statsmodels.tsa.arima.model import ARIMA
 
 # import src.data_fetcher
 # from src.data_fetcher import data_fetch
-from src.preprocess import X, y, X1, y1
+# from src.preprocess import X, y
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from src.preprocess import train, test
+# from sklearn.ensemble import RandomForestClassifier
+# from src.preprocess import train, test
 
 # loads -
-# import pandas as pd
 # from statsmodels.tsa.arima.model import ARIMA
 # from sklearn.metrics import mean_squared_error
 
@@ -43,12 +42,29 @@ def run_pipeline_2(X, y):
 
 
 #   price_prediction pipeline with ARIMA for APPLE
-def price_pred():
+def price_pred(time_series, test_size=10, order=(1,1,0)):
     try:
-        logging.info('Splitting data . . . ')
+         logging.info('Splitting data . . . ')
 
-        model = ARIMA(train, order=(1,1,0))
-        model = model.fit()
+         # validate input
+         if len(time_series) <= test_size:
+             raise ValueError(f"Time series too short ({len(time_series)}) for test size {test_size}")
+
+         # split data
+         train = time_series[:test_size]
+         test = time_series[test_size:]
+         logging.info(f"split complete: Train - {len(train)} days, Test - {len(test)} days")
+
+         # Create and fit model
+         logging.info(f'Fitting ARIMA {order} model ')
+         model = ARIMA(train, order=order)
+         model = model.fit()
+         logging.info('Model Fitting Done')
+
+         predictions = model.forecast(steps=test_size)
+         logging.info(f"Predictions generated {len(predictions)} ")
+
+         return  model, predictions, test
 
     except Exception as e:
         logging.error(f"Something went wrong: {e}")
@@ -59,12 +75,23 @@ def price_pred():
 
 # For Tests
 if __name__ == "__main__":
-    run_pipeline_2(X,y) # calling XGB
-    price_pred() # Predicting future price
+    # run_pipeline_2(X, y) # calling XGB
+    # price_pred() # Predicting future price
 
+    # Example usage
+    import pandas as pd
+    import numpy as np
 
+    # Create sample data if no data passed
+    dates = pd.date_range(start='2023-01-01', periods=100)
+    prices = pd.Series(np.random.rand(100) * 100 + 150, index=dates)
 
+    # Test the function
+    model, preds, test = price_pred(prices)
 
+    if model:  # Only if successful
+        print(f"Test values: {test.values}")
+        print(f"Predictions: {preds}")
 
 
 

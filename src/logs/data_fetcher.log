@@ -4,3 +4,7 @@
 2025-06-11 20:00:11,267 | INFO | Data saved to csvsrc/data/raw/AAPL_stock.csv
 2025-06-13 10:12:10,195 | INFO | data fetching for AAPL...
 2025-06-13 10:12:14,724 | INFO | Data saved to csvsrc/data/raw/AAPL_stock.csv
+2025-06-13 19:02:40,389 | INFO | data fetching for AAPL...
+2025-06-13 19:02:47,684 | INFO | Data saved to csvsrc/data/raw/AAPL_stock.csv
+2025-06-13 19:02:47,684 | INFO | Fetching current market data AAPL. . .
+2025-06-13 19:02:48,168 | ERROR | Something went wrong: [Errno 13] Permission denied: 'src/dataAAPL_current.csv' 
