@@ -89,6 +89,7 @@ if __name__ == "__main__":
     # Test the function
     model, preds, test = price_pred(prices)
 
+
     if model:  # Only if successful
         print(f"Test values: {test.values}")
         print(f"Predictions: {preds}")
