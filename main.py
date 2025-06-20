@@ -1,19 +1,14 @@
 # MAIN.LOG - Main Terminus for all over testing [ROUND-OFF]
 
 import logging
+import os
+
 import xgboost as xgb
 from statsmodels.tsa.arima.model import ARIMA
 
-# import src.data_fetcher
-# from src.data_fetcher import data_fetch
-# from src.preprocess import X, y
+from src.data_fetcher import data_fetch
 from sklearn.model_selection import train_test_split
-# from sklearn.ensemble import RandomForestClassifier
-# from src.preprocess import train, test
-
-# loads -
-# from statsmodels.tsa.arima.model import ARIMA
-# from sklearn.metrics import mean_squared_error
+from src.preprocess import compute_rsi
 
 
 # With XGB
@@ -24,7 +19,7 @@ def run_pipeline_2(X, y):
 
     # Train model
     logging.info('Training XG-Boost Classifier...')
-    model = xgb.XGBClassifier(use_label_encoder=False, eval_metric='logos')
+    model = xgb.XGBClassifier(use_label_encoder=False, eval_metric='logloss')
     model.fit(X_train, y_train)
 
     train_score = model.score(X_train, y_train)
@@ -51,8 +46,8 @@ def price_pred(time_series, test_size=10, order=(1,1,0)):
              raise ValueError(f"Time series too short ({len(time_series)}) for test size {test_size}")
 
          # split data
-         train = time_series[:test_size]
-         test = time_series[test_size:]
+         train = time_series[:-test_size]
+         test = time_series[-test_size:]
          logging.info(f"split complete: Train - {len(train)} days, Test - {len(test)} days")
 
          # Create and fit model
@@ -72,11 +67,39 @@ def price_pred(time_series, test_size=10, order=(1,1,0)):
 
 
 
+# Price prediction with RSI
+def apply_rsi():
+    try:
+        df = data_fetch('AAPL')
+        logging.info("fetching data - [Implementing RSI]...")
+
+        df = compute_rsi(df, window=14)
+
+        print(df[['Close', 'RSI']].tail())
+
+        os.makedirs("src/data", exist_ok=True)
+        df.to_csv("src/data/AAPL_current.csv")
+
+
+    except Exception as e:
+        logging.error(f"Somthing went wrong: {e}")
+        return None
+
+
+# Predicting using MACD
+def apply_macd():
+    try:
+        df = data_fetch('AAPL')
+        logging.info("Fetching data - [Implementing MACD]...")
+
+    except Exception as e:
+        logging.error(f"Something went wrong {e}")
+        return None
 
 # For Tests
 if __name__ == "__main__":
-    # run_pipeline_2(X, y) # calling XGB
-    # price_pred() # Predicting future price
+    # run_pipeline_2() # calling XGB
+    apply_rsi()
 
     # Example usage
     import pandas as pd
@@ -93,6 +116,16 @@ if __name__ == "__main__":
     if model:  # Only if successful
         print(f"Test values: {test.values}")
         print(f"Predictions: {preds}")
+
+
+
+
+
+
+
+
+
+
 
 
 

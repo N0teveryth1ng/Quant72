@@ -3,6 +3,8 @@ import pandas as pd
 import datetime
 import os
 
+from fontTools.misc.cython import returns
+
 from src.logger import get_logger
 
 logging = get_logger("data_fetch", "logs/data_fetcher.log")
@@ -37,23 +39,26 @@ def data_fetch(ticker='AAPL'):
 def data_fetch_2024(ticker='AAPL'):
    try:
      logging.info(f'Fetching current market data {ticker}. . .')
-     data = yf.download(ticker,start='2023-04-01', end=datetime.date.today() ,auto_adjust=True)
+     data = yf.download(ticker, start='2023-04-01', end=datetime.date.today() ,auto_adjust=True)
 
      if isinstance(data.columns, pd.MultiIndex):
         data.columns  = data.columns.get_level_values(0)
 
      data.index.name = 'date'
-     os.makedirs(f"src/data{ticker}_current.csv",exist_ok=True)
-     csv_path = f"src/data{ticker}_current.csv"
+
+     os.makedirs("src/data", exist_ok=True)
+     csv_path = f"src/data/{ticker}_current.csv"
      data.to_csv(csv_path)
 
-     logging.info(f"Date saved to csv: {ticker}")
+     logging.info(f"Date saved to csv: {csv_path}")
      return data
 
    except Exception as e:
       logging.error(f'Something went wrong: {e} ')
+      return None
 
 # Tests
 if __name__ == "__main__":
    data_fetch('AAPL')
    data_fetch_2024('AAPL')
+

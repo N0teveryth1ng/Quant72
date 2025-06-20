@@ -1,12 +1,14 @@
 import random
 from src.data_fetcher import data_fetch, data_fetch_2024
-import pandas as pd
 
 
-# - - - - > AAPL data pre-process
-apple_df = data_fetch(ticker='AAPL')
+df = data_fetch('AAPL')
+if df is None:
+    raise ValueError("Data fetch failed")
+
 
 # historic data of apple
+apple_df = data_fetch(ticker='AAPL')
 train_df = apple_df.loc['2023-01-01':'2024-03-31']
 test_df = apple_df.loc['2024-04-01':]
 
@@ -37,7 +39,7 @@ df = data_fetch_2024(ticker='AAPL')
 # feature engineering
 df['Prev_Close'] = df['Close'].shift(1) #yesterday's moving avg
 df['5_day_avg'] = df['Close'].rolling(5).mean() # 5 days MA
-df['Target'] = df['CLose'].shift(-1) # tomorrow's future price [ Predict ]
+df['Target'] = df['Close'].shift(-1) # tomorrow's future price [ Predict ]
 prices = df['Close'].dropna() # price closed at
 
 df.dropna(inplace=True) # drop missing vals
@@ -49,6 +51,41 @@ test = prices[-10:]
 # final features
 X1 = df[['Prev_Close', '5_day_avg']]
 y1 = df['Target']
+
+
+
+# RSI function
+def compute_rsi(df, window=14):
+    Delta = df['Close'].diff()
+    gain = Delta.clip(lower=0)
+    loss = -Delta.clip(upper=0)
+
+    # avg gain/loss
+    avg_gain = gain.rolling(window=window).mean()
+    avg_loss = loss.rolling(window=window).mean()
+
+    # relative strength
+    rs = avg_gain / avg_loss
+    rsi = 100 - ( 100 / (1+rs))
+
+    # New df['RSI']
+    df['RSI'] = rsi
+    return df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
