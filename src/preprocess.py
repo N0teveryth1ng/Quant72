@@ -1,4 +1,9 @@
+import logging
 import random
+
+from sympy import false
+from ta.others import daily_return
+
 from src.data_fetcher import data_fetch, data_fetch_2024
 
 
@@ -71,6 +76,34 @@ def compute_rsi(df, window=14):
     # New df['RSI']
     df['RSI'] = rsi
     return df
+
+
+# MACD
+def compute_macd(df, fast=12, slow=26, signal=9):
+    try:
+        df['EMA_fast'] = df['Close'].ewm(span=fast, adjust=False).mean()
+        df['EMA_slow'] = df['Close'].ewm(span=slow, adjust=False).mean()
+        df['MACD'] = df['EMA_fast'] - df['EMA_slow']
+        df['Signal_Line'] = df['Close'].ewm(span=signal, adjust=False).mean()
+        return df
+
+    except Exception as e:
+        logging.error(f"MACD error: {e}")
+        return df
+
+
+# LAG Returns
+def compute_lagReturns(df, window=14):
+
+    # adding LAG
+    df['lag_1'] = df['daily_return'].shift(1)
+    df['lag_2'] = df['daily_return'].shift(2)
+    df['lag_3'] = df['daily_return'].shift(3)
+
+    X = df[['daily_return', 'sentiment','lag_1', 'lag_2', 'lag_3']].dropna()
+    y = df['volatile'].loc[X.index]
+
+    return X, y
 
 
 

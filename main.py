@@ -2,6 +2,7 @@
 
 import logging
 import os
+from operator import index
 
 import xgboost as xgb
 from statsmodels.tsa.arima.model import ARIMA
@@ -9,6 +10,8 @@ from statsmodels.tsa.arima.model import ARIMA
 from src.data_fetcher import data_fetch
 from sklearn.model_selection import train_test_split
 from src.preprocess import compute_rsi
+from src.train import X_train, X_test, y_test
+from tabulate import tabulate
 
 
 # With XGB
@@ -75,7 +78,8 @@ def apply_rsi():
 
         df = compute_rsi(df, window=14)
 
-        print(df[['Close', 'RSI']].tail())
+        table_df = df[['Close', 'RSI']].tail()
+        print(tabulate(table_df, headers='keys', tablefmt='grid', showindex=False))
 
         os.makedirs("src/data", exist_ok=True)
         df.to_csv("src/data/AAPL_current.csv")
@@ -87,19 +91,62 @@ def apply_rsi():
 
 
 # Predicting using MACD
+from src.preprocess import compute_macd
 def apply_macd():
     try:
         df = data_fetch('AAPL')
         logging.info("Fetching data - [Implementing MACD]...")
 
+        df = compute_macd(df)
+        table_df = df[['Close','MACD', 'Signal_Line']].tail()
+
+        print(tabulate(table_df, headers='keys', tablefmt='grid', showindex=False))
+
+        os.makedirs("src/data", exist_ok=True)
+        df.to_csv("src/data/AAPL_macd.csv")
+
     except Exception as e:
         logging.error(f"Something went wrong {e}")
         return None
+
+
+# Predicting LAG Returns --
+from sklearn.ensemble import RandomForestClassifier
+from src.preprocess import train_df, compute_lagReturns
+
+def apply_LagRets():
+  try:
+    logging.info('Calculating Lag Returns...')
+
+    X,y = compute_lagReturns(train_df)
+
+    # split data
+    X_train, X_test, y_train, y_test = train_test_split(
+       X, y, test_size=0.3, random_state=42
+   )
+
+    # Train models
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+
+    # Accuracy
+    train_score = model.score(X_train, y_train)
+    test_score = model.score(X_test, y_test)
+
+    # Results
+    logging.info(f"RFC - Train accuracy: {train_score:.4f} ")
+    logging.info(f"RFC - Test accuracy: {test_score:.4f} ")
+
+
+  except Exception as e:
+      logging.error(f"Something went wrong {e}")
 
 # For Tests
 if __name__ == "__main__":
     # run_pipeline_2() # calling XGB
     apply_rsi()
+    apply_LagRets()
+    apply_macd()
 
     # Example usage
     import pandas as pd
