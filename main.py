@@ -104,6 +104,8 @@ def apply_macd():
 
         os.makedirs("src/data", exist_ok=True)
         df.to_csv("src/data/AAPL_macd.csv")
+        return df
+
 
     except Exception as e:
         logging.error(f"Something went wrong {e}")
@@ -141,28 +143,74 @@ def apply_LagRets():
   except Exception as e:
       logging.error(f"Something went wrong {e}")
 
+
+
+#       none
+def backtest_combined_strategy(df):
+    df = df.copy()
+
+    # Generate signal
+    df['Signal'] = 0
+    df.loc[(df['MACD'] > df['Signal_Line']) & (df['RSI'] < 60), 'Signal'] = 1  # Buy
+    df.loc[(df['MACD'] < df['Signal_Line']) & (df['RSI'] > 40), 'Signal'] = -1  # Sell
+
+    df['Position'] = df['Signal'].shift(1)
+    df['Market_Return'] = df['Close'].pct_change()
+    df['Strategy_Return'] = df['Position'] * df['Market_Return']
+
+    # Cumulative returns
+    df['Cumulative_Strategy'] = (1 + df['Strategy_Return']).cumprod()
+    df['Cumulative_Market'] = (1 + df['Market_Return']).cumprod()
+
+    # Plot
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(12, 6))
+    plt.plot(df.index, df['Cumulative_Strategy'], label='Strategy Returns', color='green')
+    plt.plot(df.index, df['Cumulative_Market'], label='Market Returns', color='blue')
+    plt.title('Combined MACD + RSI Strategy vs Market')
+    plt.xlabel('Date')
+    plt.ylabel('Cumulative Returns')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+
 # For Tests
 if __name__ == "__main__":
-    # run_pipeline_2() # calling XGB
-    apply_rsi()
+    df = data_fetch('AAPL')
+    df = compute_rsi(df, window=14)
+    df = compute_macd(df)
+
     apply_LagRets()
-    apply_macd()
 
-    # Example usage
-    import pandas as pd
-    import numpy as np
+    backtest_combined_strategy(df)
 
-    # Create sample data if no data passed
-    dates = pd.date_range(start='2023-01-01', periods=100)
-    prices = pd.Series(np.random.rand(100) * 100 + 150, index=dates)
-
-    # Test the function
-    model, preds, test = price_pred(prices)
-
-
-    if model:  # Only if successful
-        print(f"Test values: {test.values}")
-        print(f"Predictions: {preds}")
+    # run_pipeline_2() # calling XGB
+    # apply_rsi()
+    # apply_LagRets()
+    # apply_macd()
+    #
+    # df_macd = apply_macd()  # ✅ store returned df
+    # if df_macd is not None:
+    #     backtest_macd(df_macd)  # ✅ pass it to backtest
+    #
+    # # Example usage
+    # import pandas as pd
+    # import numpy as np
+    #
+    # # Create sample data if no data passed
+    # dates = pd.date_range(start='2023-01-01', periods=100)
+    # prices = pd.Series(np.random.rand(100) * 100 + 150, index=dates)
+    #
+    # # Test the function
+    # model, preds, test = price_pred(prices)
+    #
+    #
+    # if model:  # Only if successful
+    #     print(f"Test values: {test.values}")
+    #     print(f"Predictions: {preds}")
 
 
 
