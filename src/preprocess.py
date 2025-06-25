@@ -106,6 +106,15 @@ def compute_lagReturns(df, window=14):
     return X, y
 
 
+# stochastic process
+def compute_stochastic(df, k_window=14, d_window=3):
+    low_min = df['Low'].rolling(window=k_window).min()
+    high_max = df['High'].rolling(window=k_window).max()
+
+    df['%K'] = 100 * ((df['Close'] - low_min) / (high_max - low_min))
+    df['%D'] = df['%K'].rolling(window=d_window).mean()
+
+    return df
 
 
 

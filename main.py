@@ -145,6 +145,27 @@ def apply_LagRets():
 
 
 
+# stochastic application
+from src.preprocess import compute_stochastic
+
+def apply_stocastic():
+    try:
+        df = data_fetch('AAPL')
+        logging.info('Fetching data - [Stochastic Oscillator]')
+
+        df = compute_stochastic(df)
+        table_df = df[['Close', '%K', '%D']].tail()
+        print(tabulate(table_df, headers='keys', tablefmt='grid', showindex=False))
+
+        df.to_csv("src/data/AAPL_stochastic.csv")
+        return df
+
+    except Exception as e:
+        logging.info(f" Something went wrong {e}")
+        return None
+
+
+
 #       none
 def backtest_combined_strategy(df):
     df = df.copy()
@@ -183,7 +204,9 @@ if __name__ == "__main__":
     df = compute_rsi(df, window=14)
     df = compute_macd(df)
 
+
     apply_LagRets()
+    apply_stocastic()
 
     backtest_combined_strategy(df)
 
