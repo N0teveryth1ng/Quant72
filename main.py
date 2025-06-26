@@ -3,7 +3,7 @@
 import logging
 import os
 from operator import index
-
+import matplotlib.pyplot as plt
 import xgboost as xgb
 from statsmodels.tsa.arima.model import ARIMA
 
@@ -145,28 +145,8 @@ def apply_LagRets():
 
 
 
-# stochastic application
-from src.preprocess import compute_stochastic
 
-def apply_stocastic():
-    try:
-        df = data_fetch('AAPL')
-        logging.info('Fetching data - [Stochastic Oscillator]')
-
-        df = compute_stochastic(df)
-        table_df = df[['Close', '%K', '%D']].tail()
-        print(tabulate(table_df, headers='keys', tablefmt='grid', showindex=False))
-
-        df.to_csv("src/data/AAPL_stochastic.csv")
-        return df
-
-    except Exception as e:
-        logging.info(f" Something went wrong {e}")
-        return None
-
-
-
-#       none
+#   Combined Testing if RSI & MACD
 def backtest_combined_strategy(df):
     df = df.copy()
 
@@ -198,42 +178,89 @@ def backtest_combined_strategy(df):
 
 
 
-# For Tests
-if __name__ == "__main__":
+
+# stochastic application
+from src.preprocess import compute_stochastic
+
+def apply_stocastic():
+    try:
+        df = data_fetch('AAPL')
+        logging.info('Fetching data - [Stochastic Oscillator]')
+
+        df = compute_stochastic(df)
+        table_df = df[['Close', '%K', '%D']].tail()
+        print(tabulate(table_df, headers='keys', tablefmt='grid', showindex=False))
+
+        df.to_csv("src/data/AAPL_stochastic.csv")
+        return df
+
+    except Exception as e:
+        logging.info(f" Something went wrong {e}")
+        return None
+
+# Backtest Stochastic
+def backtest_stochastic(df):
+
+  try:
     df = data_fetch('AAPL')
-    df = compute_rsi(df, window=14)
-    df = compute_macd(df)
+    df = compute_stochastic(df)
+
+    df = df.copy()
+    df['Signal'] = 0
+
+    # signal generation
+    df.loc[(df['%K'] < 20) & (df['%K'] > df['%D']), 'Signal'] = 1
+    df.loc[(df['%K'] > 80) & (df['%K'] < df['%D']), 'Signal'] = -1
+
+    df['Positive'] = df['Signal'].shift(1)
+    df['Market_return'] = df['Close'].pct_chage()
+    df['Strategy_return'] = df['Positive'] * df['Market_return']
+
+    # Cumulative returns
+    df['Cumulative_Strategy'] = (1 + df['Daily_return']).cumprod()
+    df['Cumulative_Market'] = (1 + df['Market_return']).cumprod()
+
+    # Plotting
+    plt.figure(figsize=(12, 6))
+    plt.plot(df.index, df['Cumulative_Strategy'], label='Stochastic Strategy Returns', color='green')
+    plt.plot(df.index, df['Cumulative_Market'], label='Market Returns', color='blue')
+    plt.title('Stochastic Oscillator Strategy vs Market')
+    plt.xlabel('Date')
+    plt.ylabel('Cumulative Returns')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+  except Exception as e:
+      logging.error(f"Something went wrong {e}")
+      return None
+
+
+    # For Tests
+if __name__ == "__main__":
+    # df = data_fetch('AAPL')
+    # df = compute_rsi(df, window=14)
+    # df = compute_macd(df)
 
 
     apply_LagRets()
     apply_stocastic()
 
-    backtest_combined_strategy(df)
+    df_rsi_macd = data_fetch('AAPL')
+    df_rsi_macd = compute_rsi(df_rsi_macd)
+    df_rsi_macd = compute_macd(df_rsi_macd)
+    backtest_combined_strategy(df_rsi_macd)
 
+    # backtest_combined_strategy(df)
+    backtest_stochastic()
+
+""" For Individual Testing - - - > """
     # run_pipeline_2() # calling XGB
     # apply_rsi()
     # apply_LagRets()
     # apply_macd()
     #
-    # df_macd = apply_macd()  # ✅ store returned df
-    # if df_macd is not None:
-    #     backtest_macd(df_macd)  # ✅ pass it to backtest
-    #
-    # # Example usage
-    # import pandas as pd
-    # import numpy as np
-    #
-    # # Create sample data if no data passed
-    # dates = pd.date_range(start='2023-01-01', periods=100)
-    # prices = pd.Series(np.random.rand(100) * 100 + 150, index=dates)
-    #
-    # # Test the function
-    # model, preds, test = price_pred(prices)
-    #
-    #
-    # if model:  # Only if successful
-    #     print(f"Test values: {test.values}")
-    #     print(f"Predictions: {preds}")
 
 
 

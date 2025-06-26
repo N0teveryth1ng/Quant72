@@ -119,7 +119,8 @@ def compute_stochastic(df, k_window=14, d_window=3):
 
 
 
-# HI LOLA
+
+""" HI. THIS PROJECT IS INTEGRATED BY Wrick aka @CHARTER """
 
 
 
